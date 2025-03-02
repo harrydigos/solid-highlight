@@ -68,86 +68,168 @@ export const makeTriggerRegex = function (
 type TextSegment = {
   text: string;
   isMention: boolean;
+  triggerType?: string; // To identify which trigger was used
+  color?: string;
 };
 
-function parseMentionsWithWrapping(text: string, trigger = "@"): TextSegment[] {
+type TriggerConfig = {
+  pattern: string | RegExp;
+  type: "simple" | "regex";
+  name: string; // Identifier for this trigger type
+  color?: string;
+};
+
+function parseAdvancedMentions(
+  text: string,
+  triggers: TriggerConfig[],
+): TextSegment[] {
   if (!text) return [];
 
   const result: TextSegment[] = [];
-  let currentText = "";
-  let inMention = false;
+  let currentIndex = 0;
 
-  // Helper function to add a segment to our result
-  const addSegment = (text: string, isMention: boolean) => {
-    if (!text) return;
+  // Process text until we reach the end
+  while (currentIndex < text.length) {
+    let mentionFound = false;
+    let matchedTrigger: TriggerConfig | null = null;
+    let matchStart = currentIndex;
+    let matchEnd = currentIndex;
 
-    // If not a mention, split by word boundaries for better wrapping
-    if (!isMention) {
-      // Match words, spaces, and punctuation separately
-      const parts = text.match(/\S+|\s+/g) || [];
-      parts.forEach((part) => {
-        result.push({ text: part, isMention: false });
+    // Try to match each trigger at the current position
+    for (const trigger of triggers) {
+      if (trigger.type === "simple") {
+        const simplePattern = trigger.pattern as string;
+
+        // Check if text at current position starts with this trigger
+        if (text.startsWith(simplePattern, currentIndex)) {
+          let endIndex = text.indexOf(" ", currentIndex + simplePattern.length);
+          if (endIndex === -1) endIndex = text.length;
+
+          matchStart = currentIndex;
+          matchEnd = endIndex;
+          matchedTrigger = trigger;
+          mentionFound = true;
+          break;
+        }
+      } else if (trigger.type === "regex") {
+        const regexPattern = trigger.pattern as RegExp;
+        // We need to create a copy of the regex to ensure lastIndex is set correctly
+        const regex = new RegExp(regexPattern.source, regexPattern.flags);
+        regex.lastIndex = currentIndex;
+
+        const match = regex.exec(text);
+        if (match && match.index === currentIndex) {
+          matchStart = currentIndex;
+          matchEnd = currentIndex + match[0].length;
+          matchedTrigger = trigger;
+          mentionFound = true;
+          break;
+        }
+      }
+    }
+
+    if (mentionFound && matchedTrigger) {
+      // If we have accumulated regular text before this mention, add it first
+      if (matchStart > currentIndex) {
+        // Add the text before the mention, word by word
+        const textBefore = text.substring(currentIndex, matchStart);
+        const words = textBefore.match(/\S+|\s+/g) || [];
+        words.forEach((word) => {
+          result.push({ text: word, isMention: false });
+        });
+      }
+
+      // Add the mention as a single unit
+      const mentionText = text.substring(matchStart, matchEnd);
+      result.push({
+        text: mentionText,
+        isMention: true,
+        triggerType: matchedTrigger.name,
+        color: matchedTrigger.color,
       });
-    } else {
-      // Keep mentions as a single unit
-      result.push({ text, isMention: true });
-    }
-  };
 
-  for (let i = 0; i < text.length; i++) {
-    // Check if current character is a trigger
-    if (text[i] === trigger[0] && !inMention) {
-      // Add any accumulated regular text
-      addSegment(currentText, false);
-      currentText = trigger;
-      inMention = true;
-    } else if (inMention && /\s/.test(text[i])) {
-      // End mention when we hit whitespace
-      addSegment(currentText, true);
-      currentText = text[i];
-      inMention = false;
+      // Move current index past this mention
+      currentIndex = matchEnd;
     } else {
-      currentText += text[i];
+      // No mention at current position, find the next word boundary
+      const nextSpace = text.indexOf(" ", currentIndex);
+      if (nextSpace === -1) {
+        // No more spaces, add the rest as a word
+        result.push({ text: text.substring(currentIndex), isMention: false });
+        break;
+      } else {
+        // Add the word
+        result.push({
+          text: text.substring(currentIndex, nextSpace + 1),
+          isMention: false,
+        });
+        currentIndex = nextSpace + 1;
+      }
     }
-  }
-
-  // Add the final segment
-  if (inMention) {
-    addSegment(currentText, true);
-  } else {
-    addSegment(currentText, false);
   }
 
   return result;
 }
 
+// Example usage:
+/*
+const triggers = [
+  { pattern: '@', type: 'simple', name: 'at-mention' },
+  { pattern: '@@', type: 'simple', name: 'double-at-mention' },
+  { pattern: /\{\{[^}]+\}\}/g, type: 'regex', name: 'curly-mention' }
+];
+
+const text = "Hello @user and @@team! We need to update the {{variable}} here.";
+const segments = parseAdvancedMentions(text, triggers);
+const container = document.getElementById('text-container');
+renderAdvancedTextWithMentions(segments).forEach(span => container.appendChild(span));
+*/
+
+const triggers = [
+  { pattern: "@", type: "simple", name: "at-mention", color: "green" },
+  { pattern: "##", type: "simple", name: "hash-team-mention", color: "purple" },
+  // Updated regex to capture {{ with any content including spaces inside }}
+  {
+    pattern: /\{\{[^}]*\}\}/g,
+    type: "regex",
+    name: "curly-mention",
+    color: "blue",
+  },
+] satisfies TriggerConfig[];
+
 export default function App() {
-  const [trigger, setTrigger] = createSignal<string>("@"); // | RegExp
+  // const [trigger, setTrigger] = createSignal<string>("@"); // | RegExp
   const [mentionInputValue, setMentionInputValue] = createSignal(
-    `This is a ${trigger()}variable`,
+    "Hello @user and ##team! We need to update the {{ variable }} here.",
+    // `This is a ${trigger()}variable`,
   );
   let ref: HTMLDivElement | undefined;
 
+  // const derivedMentionInputValue = createMemo(() => {
+  //   // return mentionInputValue().split(REGEX);
+  //   // console.log(makeTriggerRegex(mentionInputValue()));
+  //   // return makeTriggerRegex(mentionInputValue());
+  //   // console.log(mentionInputValue().split(" "));
+  //   console.log(parseMentionsWithWrapping(mentionInputValue(), trigger()));
+  //   return parseMentionsWithWrapping(mentionInputValue(), trigger());
+  //   // return mentionInputValue().split(" ");
+  // });
+
   const derivedMentionInputValue = createMemo(() => {
-    // return mentionInputValue().split(REGEX);
-    // console.log(makeTriggerRegex(mentionInputValue()));
-    // return makeTriggerRegex(mentionInputValue());
-    // console.log(mentionInputValue().split(" "));
-    console.log(parseMentionsWithWrapping(mentionInputValue(), trigger()));
-    return parseMentionsWithWrapping(mentionInputValue(), trigger());
-    // return mentionInputValue().split(" ");
+    console.log(parseAdvancedMentions(mentionInputValue(), triggers));
+    return parseAdvancedMentions(mentionInputValue(), triggers);
   });
 
   return (
     <div style={{ display: "flex", "flex-direction": "column", gap: "16px" }}>
-      <div>
-        <label>Trigger</label>
-        <input
-          type="text"
-          value={trigger()}
-          onInput={(e) => setTrigger(e.target.value)}
-        />
-      </div>
+      {/* <div> */}
+      {/*   <label>Trigger</label> */}
+      {/*   <input */}
+      {/*     type="text" */}
+      {/*     value={trigger()} */}
+      {/*     onInput={(e) => setTrigger(e.target.value)} */}
+      {/*   /> */}
+      {/* </div> */}
       <input
         class="input-normal"
         readonly
@@ -176,12 +258,14 @@ export default function App() {
               >
                 <span
                   style={{
-                    color: "green",
-                    "background-color": "rgba(0, 255, 0, 0.05)",
+                    color: word.color || "green",
+                    "background-color": "white",
                     "border-radius": "2px",
-                    cursor: "pointer",
-                    "z-index": 1,
+                    // To move the marker in front
+                    // cursor: "pointer",
+                    // "z-index": 1,
                   }}
+                  data-trigger-type={word.triggerType}
                 >
                   {word.text}
                 </span>
