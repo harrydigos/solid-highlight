@@ -1,31 +1,15 @@
-import { For, Show, createMemo, createSignal } from "solid-js";
+import {
+  For,
+  Match,
+  Show,
+  Switch,
+  createEffect,
+  createMemo,
+  createSignal,
+  onMount,
+} from "solid-js";
 import "./App.css";
 
-const REGEX = /({{.*?}})/g;
-
-// escape RegExp special characters https://stackoverflow.com/a/9310752/5142490
-const escapeRegex = (str: string) =>
-  str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-
-export const makeTriggerRegex = function (
-  trigger: RegExp | string,
-  options: { allowSpaceInQuery?: boolean } = {},
-) {
-  if (trigger instanceof RegExp) {
-    return trigger;
-  } else {
-    const { allowSpaceInQuery = false } = options;
-    const escapedTriggerChar = escapeRegex(trigger);
-
-    // first capture group is the part to be replaced on completion
-    // second capture group is for extracting the search query
-    return new RegExp(
-      `(?:^|\\s)(${escapedTriggerChar}([^${
-        allowSpaceInQuery ? "" : "\\s"
-      }${escapedTriggerChar}]*))$`,
-    );
-  }
-};
 // {
 //   /**
 //    * If set to `true` a regular text input element will be rendered
@@ -70,6 +54,7 @@ type TextSegment = {
   isMention: boolean;
   triggerType?: string; // To identify which trigger was used
   color?: string;
+  isNewline?: boolean;
 };
 
 type TriggerConfig = {
@@ -79,9 +64,14 @@ type TriggerConfig = {
   color?: string;
 };
 
+type ParserOptions = {
+  handleNewlines?: boolean;
+};
+
 function parseAdvancedMentions(
   text: string,
   triggers: TriggerConfig[],
+  options: ParserOptions = { handleNewlines: false },
 ): TextSegment[] {
   if (!text) return [];
 
@@ -90,6 +80,22 @@ function parseAdvancedMentions(
 
   // Process text until we reach the end
   while (currentIndex < text.length) {
+    // Check for newlines first if handling them
+    console.log({ text });
+    if (
+      options.handleNewlines &&
+      text.substring(currentIndex, currentIndex + 1) === "\n"
+    ) {
+      console.log("HERE");
+      result.push({
+        text: "\n",
+        isMention: false,
+        isNewline: true,
+      });
+      currentIndex++;
+      continue;
+    }
+
     let mentionFound = false;
     let matchedTrigger: TriggerConfig | null = null;
     let matchStart = currentIndex;
@@ -102,7 +108,18 @@ function parseAdvancedMentions(
 
         // Check if text at current position starts with this trigger
         if (text.startsWith(simplePattern, currentIndex)) {
-          let endIndex = text.indexOf(" ", currentIndex + simplePattern.length);
+          // Find the end of the mention (space or newline)
+          let endIndex = -1;
+          for (
+            let i = currentIndex + simplePattern.length;
+            i < text.length;
+            i++
+          ) {
+            if (text[i] === " " || text[i] === "\n") {
+              endIndex = i;
+              break;
+            }
+          }
           if (endIndex === -1) endIndex = text.length;
 
           matchStart = currentIndex;
@@ -113,7 +130,7 @@ function parseAdvancedMentions(
         }
       } else if (trigger.type === "regex") {
         const regexPattern = trigger.pattern as RegExp;
-        // We need to create a copy of the regex to ensure lastIndex is set correctly
+        // Create a copy of the regex to ensure lastIndex is set correctly
         const regex = new RegExp(regexPattern.source, regexPattern.flags);
         regex.lastIndex = currentIndex;
 
@@ -129,14 +146,33 @@ function parseAdvancedMentions(
     }
 
     if (mentionFound && matchedTrigger) {
-      // If we have accumulated regular text before this mention, add it first
+      // If we have accumulated regular text before this mention, add it
       if (matchStart > currentIndex) {
-        // Add the text before the mention, word by word
-        const textBefore = text.substring(currentIndex, matchStart);
-        const words = textBefore.match(/\S+|\s+/g) || [];
-        words.forEach((word) => {
-          result.push({ text: word, isMention: false });
-        });
+        // Process the text before the mention
+        let textBefore = text.substring(currentIndex, matchStart);
+
+        if (options.handleNewlines) {
+          // Split by newlines first
+          const segments = textBefore.split(/(\n)/);
+
+          segments.forEach((segment) => {
+            if (segment === "\n") {
+              result.push({ text: "\n", isMention: false, isNewline: true });
+            } else if (segment) {
+              // Split regular text by word boundaries
+              const words = segment.match(/\S+|\s+/g) || [];
+              words.forEach((word) => {
+                result.push({ text: word, isMention: false });
+              });
+            }
+          });
+        } else {
+          // Original word-by-word splitting
+          const words = textBefore.match(/\S+|\s+/g) || [];
+          words.forEach((word) => {
+            result.push({ text: word, isMention: false });
+          });
+        }
       }
 
       // Add the mention as a single unit
@@ -151,19 +187,47 @@ function parseAdvancedMentions(
       // Move current index past this mention
       currentIndex = matchEnd;
     } else {
-      // No mention at current position, find the next word boundary
-      const nextSpace = text.indexOf(" ", currentIndex);
-      if (nextSpace === -1) {
-        // No more spaces, add the rest as a word
+      // No mention at current position, find the next word boundary or newline
+      let nextSpaceIndex = text.indexOf(" ", currentIndex);
+      let nextNewlineIndex = options.handleNewlines
+        ? text.indexOf("\n", currentIndex)
+        : -1;
+
+      // Determine which comes first: space or newline
+      let nextBreakIndex = -1;
+      if (nextSpaceIndex !== -1 && nextNewlineIndex !== -1) {
+        nextBreakIndex = Math.min(nextSpaceIndex, nextNewlineIndex);
+      } else if (nextSpaceIndex !== -1) {
+        nextBreakIndex = nextSpaceIndex;
+      } else if (nextNewlineIndex !== -1) {
+        nextBreakIndex = nextNewlineIndex;
+      }
+
+      if (nextBreakIndex === -1) {
+        // No more breaks, add the rest as a word
         result.push({ text: text.substring(currentIndex), isMention: false });
         break;
       } else {
-        // Add the word
-        result.push({
-          text: text.substring(currentIndex, nextSpace + 1),
-          isMention: false,
-        });
-        currentIndex = nextSpace + 1;
+        // Check if the break is a newline
+        if (options.handleNewlines && text[nextBreakIndex] === "\n") {
+          // Add text before newline
+          if (nextBreakIndex > currentIndex) {
+            result.push({
+              text: text.substring(currentIndex, nextBreakIndex),
+              isMention: false,
+            });
+          }
+          // Add the newline
+          result.push({ text: "\n", isMention: false, isNewline: true });
+          currentIndex = nextBreakIndex + 1;
+        } else {
+          // Regular space break
+          result.push({
+            text: text.substring(currentIndex, nextBreakIndex + 1),
+            isMention: false,
+          });
+          currentIndex = nextBreakIndex + 1;
+        }
       }
     }
   }
@@ -205,8 +269,7 @@ export default function App() {
   );
 
   const [mentionTextAreaValue, setMentionTextAreaValue] = createSignal(
-    "Hello @user and ##team!\n\nWe need to update the {{ variable }} here.",
-    // `This is a ${trigger()}variable`,
+    "Hello @user\nand\n##team!\n\nWe need to update the {{ variable }} here.",
   );
   let ref: HTMLDivElement | undefined;
 
@@ -225,9 +288,18 @@ export default function App() {
     return parseAdvancedMentions(mentionInputValue(), triggers);
   });
 
+  createEffect(() => {
+    console.log(
+      parseAdvancedMentions(mentionTextAreaValue(), triggers, {
+        handleNewlines: true,
+      }),
+    );
+  });
+
   const derivedMentionTextAreaValue = createMemo(() => {
-    console.log(parseAdvancedMentions(mentionInputValue(), triggers));
-    return parseAdvancedMentions(mentionInputValue(), triggers);
+    return parseAdvancedMentions(mentionTextAreaValue(), triggers, {
+      handleNewlines: true,
+    });
   });
 
   return (
@@ -240,55 +312,58 @@ export default function App() {
       {/*     onInput={(e) => setTrigger(e.target.value)} */}
       {/*   /> */}
       {/* </div> */}
-      <input
-        class="input-normal"
-        readonly
-        value={mentionInputValue()}
-        placeholder="This is a placeholder!"
-      />
+      {/* <input */}
+      {/*   class="input-normal" */}
+      {/*   readonly */}
+      {/*   value={mentionInputValue()} */}
+      {/*   placeholder="This is a placeholder!" */}
+      {/* /> */}
 
-      <div class="input-container">
-        <input
-          value={mentionInputValue()}
-          onInput={(e) => setMentionInputValue(e.target.value || "")}
-          onScroll={(e) => {
-            if (!ref) return;
-            ref.scrollTop = e.target.scrollTop;
-            ref.scrollLeft = e.target.scrollLeft;
-          }}
-          placeholder="This is a placeholder!"
-        />
-        <div ref={ref} class="input-renderer">
-          <For each={derivedMentionInputValue()}>
-            {(word) => (
-              <Show
-                // when={word.match(REGEX) !== null}
-                when={word.isMention}
-                fallback={<span>{word.text}</span>}
-              >
-                <span
-                  style={{
-                    color: word.color || "green",
-                    "background-color": "white",
-                    "border-radius": "2px",
-                    // To move the marker in front
-                    // cursor: "pointer",
-                    // "z-index": 1,
-                  }}
-                  data-trigger-type={word.triggerType}
-                >
-                  {word.text}
-                </span>
-              </Show>
-            )}
-          </For>
-        </div>
-      </div>
+      {/* <div class="input-container"> */}
+      {/*   <input */}
+      {/*     value={mentionInputValue()} */}
+      {/*     onInput={(e) => setMentionInputValue(e.target.value || "")} */}
+      {/*     onScroll={(e) => { */}
+      {/*       if (!ref) return; */}
+      {/*       ref.scrollTop = e.target.scrollTop; */}
+      {/*       ref.scrollLeft = e.target.scrollLeft; */}
+      {/*     }} */}
+      {/*     placeholder="This is a placeholder!" */}
+      {/*   /> */}
+      {/*   <div ref={ref} class="input-renderer"> */}
+      {/*     <For each={derivedMentionInputValue()}> */}
+      {/*       {(word) => ( */}
+      {/*         <Show */}
+      {/*           // when={word.match(REGEX) !== null} */}
+      {/*           when={word.isMention} */}
+      {/*           fallback={<span>{word.text}</span>} */}
+      {/*         > */}
+      {/*           <span */}
+      {/*             style={{ */}
+      {/*               color: word.color || "green", */}
+      {/*               "background-color": "white", */}
+      {/*               "border-radius": "2px", */}
+      {/*               // To move the marker in front */}
+      {/*               // cursor: "pointer", */}
+      {/*               // "z-index": 1, */}
+      {/*             }} */}
+      {/*             data-trigger-type={word.triggerType} */}
+      {/*           > */}
+      {/*             {word.text} */}
+      {/*           </span> */}
+      {/*         </Show> */}
+      {/*       )} */}
+      {/*     </For> */}
+      {/*   </div> */}
+      {/* </div> */}
 
       <div class="textarea-container">
         <textarea
           value={mentionTextAreaValue()}
-          onInput={(e) => setMentionTextAreaValue(e.target.value || "")}
+          onInput={(e) => {
+            console.log(e.target.value);
+            setMentionTextAreaValue(e.target.value || "");
+          }}
           onScroll={(e) => {
             if (!ref) return;
             ref.scrollTop = e.target.scrollTop;
@@ -299,25 +374,57 @@ export default function App() {
         <div ref={ref} class="textarea-renderer">
           <For each={derivedMentionTextAreaValue()}>
             {(word) => (
-              <Show
-                // when={word.match(REGEX) !== null}
-                when={word.isMention}
-                fallback={<span>{word.text}</span>}
-              >
-                <span
-                  style={{
-                    color: word.color || "green",
-                    "background-color": "white",
-                    "border-radius": "2px",
-                    // To move the marker in front
-                    // cursor: "pointer",
-                    // "z-index": 1,
-                  }}
-                  data-trigger-type={word.triggerType}
-                >
-                  {word.text}
-                </span>
-              </Show>
+              <Switch>
+                <Match when={word.isNewline}>
+                  {/* <span */}
+                  {/*   style={{ */}
+                  {/*     height: "fit-content", */}
+                  {/*     "background-color": "red", */}
+                  {/*     color: "green", */}
+                  {/*     // display: "flex", */}
+                  {/*     // flex: 1, */}
+                  {/*     // width: "100%", */}
+                  {/*     // "flex-direction": "row", */}
+                  {/*     // display: "inline-flex", */}
+                  {/*     // flex: "0 0 100%", */}
+                  {/*     // flex: 1, */}
+                  {/*     // "flex-wrap": "nowrap", */}
+                  {/*     // "white-space": "nowrap", */}
+                  {/*   }} */}
+                  {/* > */}
+                  {/*   {"{{ 1 }}"} */}
+                  {/* </span> */}
+                  <br />
+                </Match>
+                <Match when={word.isMention}>
+                  <span
+                    class="mention"
+                    style={{
+                      color: word.color || "green",
+                      height: "fit-content",
+                      // display: "inline-flex",
+                      // flex: 0,
+                      // "min-width": "fit-content",
+                    }}
+                    data-trigger-type={word.triggerType}
+                  >
+                    {word.text}
+                  </span>
+                </Match>
+                <Match when={!word.isMention}>
+                  <span
+                    style={
+                      {
+                        // display: "flex",
+                        // flex: 0,
+                        // "min-width": "fit-content",
+                      }
+                    }
+                  >
+                    {word.text}
+                  </span>
+                </Match>
+              </Switch>
             )}
           </For>
         </div>
