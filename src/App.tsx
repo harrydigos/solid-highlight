@@ -81,12 +81,10 @@ function parseAdvancedMentions(
   // Process text until we reach the end
   while (currentIndex < text.length) {
     // Check for newlines first if handling them
-    console.log({ text });
     if (
       options.handleNewlines &&
       text.substring(currentIndex, currentIndex + 1) === "\n"
     ) {
-      console.log("HERE");
       result.push({
         text: "\n",
         isMention: false,
@@ -262,7 +260,6 @@ const triggers = [
 ] satisfies TriggerConfig[];
 
 export default function App() {
-  // const [trigger, setTrigger] = createSignal<string>("@"); // | RegExp
   const [mentionInputValue, setMentionInputValue] = createSignal(
     "Hello @user and ##team! We need to update the {{ variable }} here.",
     // `This is a ${trigger()}variable`,
@@ -273,19 +270,18 @@ export default function App() {
   );
   let ref: HTMLDivElement | undefined;
 
-  // const derivedMentionInputValue = createMemo(() => {
-  //   // return mentionInputValue().split(REGEX);
-  //   // console.log(makeTriggerRegex(mentionInputValue()));
-  //   // return makeTriggerRegex(mentionInputValue());
-  //   // console.log(mentionInputValue().split(" "));
-  //   console.log(parseMentionsWithWrapping(mentionInputValue(), trigger()));
-  //   return parseMentionsWithWrapping(mentionInputValue(), trigger());
-  //   // return mentionInputValue().split(" ");
-  // });
-
+  createEffect(() => {
+    console.log(
+      parseAdvancedMentions(mentionInputValue(), triggers, {
+        handleNewlines: false,
+      }),
+    );
+  });
   const derivedMentionInputValue = createMemo(() => {
     // console.log(parseAdvancedMentions(mentionInputValue(), triggers));
-    return parseAdvancedMentions(mentionInputValue(), triggers);
+    return parseAdvancedMentions(mentionInputValue(), triggers, {
+      handleNewlines: false,
+    });
   });
 
   createEffect(() => {
@@ -303,130 +299,151 @@ export default function App() {
   });
 
   return (
-    <div style={{ display: "flex", "flex-direction": "column", gap: "16px" }}>
-      {/* <div> */}
-      {/*   <label>Trigger</label> */}
-      {/*   <input */}
-      {/*     type="text" */}
-      {/*     value={trigger()} */}
-      {/*     onInput={(e) => setTrigger(e.target.value)} */}
-      {/*   /> */}
-      {/* </div> */}
-      {/* <input */}
-      {/*   class="input-normal" */}
-      {/*   readonly */}
-      {/*   value={mentionInputValue()} */}
-      {/*   placeholder="This is a placeholder!" */}
-      {/* /> */}
+    <div style={{ display: "flex", "flex-direction": "column", gap: "60px" }}>
+      <div style={{ display: "flex", "flex-direction": "column", gap: "16px" }}>
+        <div class="input-container">
+          {/* FIX: overflow here broke */}
+          <input
+            value={mentionInputValue()}
+            onInput={(e) => setMentionInputValue(e.target.value || "")}
+            onScroll={(e) => {
+              if (!ref) return;
+              ref.scrollTop = e.target.scrollTop;
+              ref.scrollLeft = e.target.scrollLeft;
+            }}
+            placeholder="This is a placeholder!"
+          />
 
-      {/* <div class="input-container"> */}
-      {/*   <input */}
-      {/*     value={mentionInputValue()} */}
-      {/*     onInput={(e) => setMentionInputValue(e.target.value || "")} */}
-      {/*     onScroll={(e) => { */}
-      {/*       if (!ref) return; */}
-      {/*       ref.scrollTop = e.target.scrollTop; */}
-      {/*       ref.scrollLeft = e.target.scrollLeft; */}
-      {/*     }} */}
-      {/*     placeholder="This is a placeholder!" */}
-      {/*   /> */}
-      {/*   <div ref={ref} class="input-renderer"> */}
-      {/*     <For each={derivedMentionInputValue()}> */}
-      {/*       {(word) => ( */}
-      {/*         <Show */}
-      {/*           // when={word.match(REGEX) !== null} */}
-      {/*           when={word.isMention} */}
-      {/*           fallback={<span>{word.text}</span>} */}
-      {/*         > */}
-      {/*           <span */}
-      {/*             style={{ */}
-      {/*               color: word.color || "green", */}
-      {/*               "background-color": "white", */}
-      {/*               "border-radius": "2px", */}
-      {/*               // To move the marker in front */}
-      {/*               // cursor: "pointer", */}
-      {/*               // "z-index": 1, */}
-      {/*             }} */}
-      {/*             data-trigger-type={word.triggerType} */}
-      {/*           > */}
-      {/*             {word.text} */}
-      {/*           </span> */}
-      {/*         </Show> */}
-      {/*       )} */}
-      {/*     </For> */}
-      {/*   </div> */}
-      {/* </div> */}
-
-      <div class="textarea-container">
-        <textarea
-          value={mentionTextAreaValue()}
-          onInput={(e) => {
-            console.log(e.target.value);
-            setMentionTextAreaValue(e.target.value || "");
-          }}
-          onScroll={(e) => {
-            if (!ref) return;
-            ref.scrollTop = e.target.scrollTop;
-            ref.scrollLeft = e.target.scrollLeft;
-          }}
-          placeholder="This is a placeholder!"
-        />
-        <div ref={ref} class="textarea-renderer">
-          <For each={derivedMentionTextAreaValue()}>
-            {(word) => (
-              <Switch>
-                <Match when={word.isNewline}>
-                  {/* <span */}
-                  {/*   style={{ */}
-                  {/*     height: "fit-content", */}
-                  {/*     "background-color": "red", */}
-                  {/*     color: "green", */}
-                  {/*     // display: "flex", */}
-                  {/*     // flex: 1, */}
-                  {/*     // width: "100%", */}
-                  {/*     // "flex-direction": "row", */}
-                  {/*     // display: "inline-flex", */}
-                  {/*     // flex: "0 0 100%", */}
-                  {/*     // flex: 1, */}
-                  {/*     // "flex-wrap": "nowrap", */}
-                  {/*     // "white-space": "nowrap", */}
-                  {/*   }} */}
-                  {/* > */}
-                  {/*   {"{{ 1 }}"} */}
-                  {/* </span> */}
-                  <br />
-                </Match>
-                <Match when={word.isMention}>
+          <div ref={ref} class="input-renderer">
+            <For each={derivedMentionInputValue()}>
+              {(word) => (
+                <Show
+                  // when={word.match(REGEX) !== null}
+                  when={word.isMention}
+                  fallback={<span>{word.text}</span>}
+                >
                   <span
-                    class="mention"
                     style={{
                       color: word.color || "green",
-                      height: "fit-content",
-                      // display: "inline-flex",
-                      // flex: 0,
-                      // "min-width": "fit-content",
+                      "background-color": "white",
+                      "border-radius": "2px",
+                      // To move the marker in front
+                      cursor: "pointer",
+                      "z-index": 1,
                     }}
                     data-trigger-type={word.triggerType}
                   >
                     {word.text}
                   </span>
-                </Match>
-                <Match when={!word.isMention}>
-                  <span
-                    style={
-                      {
-                        // display: "flex",
+                </Show>
+              )}
+            </For>
+          </div>
+        </div>
+        <div style={{ display: "flex", "flex-direction": "column" }}>
+          <label>actual input value</label>
+          <input
+            class="input-normal"
+            readonly
+            value={mentionInputValue()}
+            placeholder="This is a placeholder!"
+          />
+        </div>
+      </div>
+
+      <div style={{ display: "flex", "flex-direction": "column", gap: "16px" }}>
+        <div class="textarea-container">
+          <textarea
+            value={mentionTextAreaValue()}
+            onInput={(e) => {
+              console.log(e.target.value);
+              setMentionTextAreaValue(e.target.value || "");
+            }}
+            onScroll={(e) => {
+              if (!ref) return;
+              ref.scrollTop = e.target.scrollTop;
+              ref.scrollLeft = e.target.scrollLeft;
+            }}
+            placeholder="This is a placeholder!"
+          />
+          <div ref={ref} class="textarea-renderer">
+            <For each={derivedMentionTextAreaValue()}>
+              {(word) => (
+                <Switch>
+                  <Match when={word.isNewline}>
+                    {/* <span */}
+                    {/*   style={{ */}
+                    {/*     height: "fit-content", */}
+                    {/*     "background-color": "red", */}
+                    {/*     color: "green", */}
+                    {/*     // display: "flex", */}
+                    {/*     // flex: 1, */}
+                    {/*     // width: "100%", */}
+                    {/*     // "flex-direction": "row", */}
+                    {/*     // display: "inline-flex", */}
+                    {/*     // flex: "0 0 100%", */}
+                    {/*     // flex: 1, */}
+                    {/*     // "flex-wrap": "nowrap", */}
+                    {/*     // "white-space": "nowrap", */}
+                    {/*   }} */}
+                    {/* > */}
+                    {/*   {"{{ 1 }}"} */}
+                    {/* </span> */}
+                    <br />
+                  </Match>
+                  <Match when={word.isMention}>
+                    <span
+                      class="mention"
+                      style={{
+                        // color: word.color || "green",
+                        // height: "fit-content",
+                        // "z-index": 1,
+                        // cursor: "pointer",
+                        // display: "inline-flex",
                         // flex: 0,
                         // "min-width": "fit-content",
+
+                        color: word.color || "green",
+                        "background-color": "white",
+                        "border-radius": "2px",
+                        // To move the marker in front
+                        cursor: "pointer",
+                        position: "absolute",
+                        // order: 4,
+                        "z-index": 1,
+                      }}
+                      data-trigger-type={word.triggerType}
+                    >
+                      {word.text}
+                    </span>
+                  </Match>
+                  <Match when={!word.isMention}>
+                    <span
+                      style={
+                        {
+                          // display: "flex",
+                          // flex: 0,
+                          // "min-width": "fit-content",
+                        }
                       }
-                    }
-                  >
-                    {word.text}
-                  </span>
-                </Match>
-              </Switch>
-            )}
-          </For>
+                    >
+                      {word.text}
+                    </span>
+                  </Match>
+                </Switch>
+              )}
+            </For>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", "flex-direction": "column" }}>
+          <label>actual textarea value</label>
+          <textarea
+            class="textarea-normal"
+            readonly
+            value={mentionTextAreaValue()}
+            placeholder="This is a placeholder!"
+          />
         </div>
       </div>
     </div>
