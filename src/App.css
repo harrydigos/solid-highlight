@@ -51,14 +51,6 @@
   display: none;
 }
 
-.mention {
-  color: green;
-  background-color: rgba(0, 255, 0, 0.05);
-  border-radius: 2px;
-  cursor: pointer;
-  z-index: 1;
-}
-
 body {
   font-family: sans-serif;
   display: flex;

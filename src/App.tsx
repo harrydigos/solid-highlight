@@ -139,7 +139,7 @@ export default function App() {
   });
 
   return (
-    <>
+    <div style={{ display: "flex", "flex-direction": "column", gap: "16px" }}>
       <div>
         <label>Trigger</label>
         <input
@@ -174,12 +174,22 @@ export default function App() {
                 when={word.isMention}
                 fallback={<span>{word.text}</span>}
               >
-                <span class="mention">{word.text}</span>
+                <span
+                  style={{
+                    color: "green",
+                    "background-color": "rgba(0, 255, 0, 0.05)",
+                    "border-radius": "2px",
+                    cursor: "pointer",
+                    "z-index": 1,
+                  }}
+                >
+                  {word.text}
+                </span>
               </Show>
             )}
           </For>
         </div>
       </div>
-    </>
+    </div>
   );
 }
