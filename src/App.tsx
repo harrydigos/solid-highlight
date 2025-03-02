@@ -406,10 +406,9 @@ export default function App() {
                         color: word.color || "green",
                         "background-color": "white",
                         "border-radius": "2px",
+                        position: "relative",
                         // To move the marker in front
                         cursor: "pointer",
-                        position: "absolute",
-                        // order: 4,
                         "z-index": 1,
                       }}
                       data-trigger-type={word.triggerType}
