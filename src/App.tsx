@@ -203,6 +203,11 @@ export default function App() {
     "Hello @user and ##team! We need to update the {{ variable }} here.",
     // `This is a ${trigger()}variable`,
   );
+
+  const [mentionTextAreaValue, setMentionTextAreaValue] = createSignal(
+    "Hello @user and ##team!\n\nWe need to update the {{ variable }} here.",
+    // `This is a ${trigger()}variable`,
+  );
   let ref: HTMLDivElement | undefined;
 
   // const derivedMentionInputValue = createMemo(() => {
@@ -216,6 +221,11 @@ export default function App() {
   // });
 
   const derivedMentionInputValue = createMemo(() => {
+    // console.log(parseAdvancedMentions(mentionInputValue(), triggers));
+    return parseAdvancedMentions(mentionInputValue(), triggers);
+  });
+
+  const derivedMentionTextAreaValue = createMemo(() => {
     console.log(parseAdvancedMentions(mentionInputValue(), triggers));
     return parseAdvancedMentions(mentionInputValue(), triggers);
   });
@@ -250,6 +260,44 @@ export default function App() {
         />
         <div ref={ref} class="input-renderer">
           <For each={derivedMentionInputValue()}>
+            {(word) => (
+              <Show
+                // when={word.match(REGEX) !== null}
+                when={word.isMention}
+                fallback={<span>{word.text}</span>}
+              >
+                <span
+                  style={{
+                    color: word.color || "green",
+                    "background-color": "white",
+                    "border-radius": "2px",
+                    // To move the marker in front
+                    // cursor: "pointer",
+                    // "z-index": 1,
+                  }}
+                  data-trigger-type={word.triggerType}
+                >
+                  {word.text}
+                </span>
+              </Show>
+            )}
+          </For>
+        </div>
+      </div>
+
+      <div class="textarea-container">
+        <textarea
+          value={mentionTextAreaValue()}
+          onInput={(e) => setMentionTextAreaValue(e.target.value || "")}
+          onScroll={(e) => {
+            if (!ref) return;
+            ref.scrollTop = e.target.scrollTop;
+            ref.scrollLeft = e.target.scrollLeft;
+          }}
+          placeholder="This is a placeholder!"
+        />
+        <div ref={ref} class="textarea-renderer">
+          <For each={derivedMentionTextAreaValue()}>
             {(word) => (
               <Show
                 // when={word.match(REGEX) !== null}
