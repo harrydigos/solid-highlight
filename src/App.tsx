@@ -268,7 +268,8 @@ export default function App() {
   const [mentionTextAreaValue, setMentionTextAreaValue] = createSignal(
     "Hello @user\nand\n##team!\n\nWe need to update the {{ variable }} here.",
   );
-  let ref: HTMLDivElement | undefined;
+  let refInput: HTMLDivElement | undefined;
+  let refTextArea: HTMLDivElement | undefined;
 
   createEffect(() => {
     console.log(
@@ -302,19 +303,18 @@ export default function App() {
     <div style={{ display: "flex", "flex-direction": "column", gap: "60px" }}>
       <div style={{ display: "flex", "flex-direction": "column", gap: "16px" }}>
         <div class="input-container">
-          {/* FIX: overflow here broke */}
           <input
             value={mentionInputValue()}
             onInput={(e) => setMentionInputValue(e.target.value || "")}
             onScroll={(e) => {
-              if (!ref) return;
-              ref.scrollTop = e.target.scrollTop;
-              ref.scrollLeft = e.target.scrollLeft;
+              if (!refInput) return;
+              refInput.scrollTop = e.target.scrollTop;
+              refInput.scrollLeft = e.target.scrollLeft;
             }}
             placeholder="This is a placeholder!"
           />
 
-          <div ref={ref} class="input-renderer">
+          <div ref={refInput} class="input-renderer">
             <For each={derivedMentionInputValue()}>
               {(word) => (
                 <Show
@@ -360,13 +360,13 @@ export default function App() {
               setMentionTextAreaValue(e.target.value || "");
             }}
             onScroll={(e) => {
-              if (!ref) return;
-              ref.scrollTop = e.target.scrollTop;
-              ref.scrollLeft = e.target.scrollLeft;
+              if (!refTextArea) return;
+              refTextArea.scrollTop = e.target.scrollTop;
+              refTextArea.scrollLeft = e.target.scrollLeft;
             }}
             placeholder="This is a placeholder!"
           />
-          <div ref={ref} class="textarea-renderer">
+          <div ref={refTextArea} class="textarea-renderer">
             <For each={derivedMentionTextAreaValue()}>
               {(word) => (
                 <Switch>
