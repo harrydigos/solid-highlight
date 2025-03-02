@@ -1,0 +1,62 @@
+.input-container {
+  border: 1px solid gray;
+  border-radius: 4px;
+  width: 250px;
+  height: 2rem;
+  position: relative;
+}
+
+.input-container input {
+  width: 100%;
+  border: none;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  outline: none;
+  padding: 0 0.5rem;
+  font-size: 14px;
+  background: transparent;
+}
+
+/* For showing through placeholder */
+.input-container input:not([value=""]) {
+  -webkit-text-fill-color: transparent;
+}
+
+.input-container .input-renderer {
+  font-size: 14px;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  margin: 0 0.5rem;
+  /* This line preserves trailing
+      whitespaces */
+  white-space: pre;
+
+  overflow-x: auto;
+  user-select: none;
+  scrollbar-width: none;
+}
+
+.input-container .input-renderer::-webkit-scrollbar {
+  display: none;
+}
+
+.mention {
+  color: green;
+  cursor: pointer;
+  z-index: 1;
+}
+
+body {
+  font-family: sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80vh;
+}
+
+* {
+  box-sizing: border-box;
+}
