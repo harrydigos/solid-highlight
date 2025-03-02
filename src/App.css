@@ -1,7 +1,15 @@
+.input-normal {
+  border: 1px solid gray;
+  border-radius: 4px;
+  width: 500px;
+  height: 2rem;
+  position: relative;
+}
+
 .input-container {
   border: 1px solid gray;
   border-radius: 4px;
-  width: 250px;
+  width: 500px;
   height: 2rem;
   position: relative;
 }
@@ -14,7 +22,7 @@
   z-index: 1;
   outline: none;
   padding: 0 0.5rem;
-  font-size: 14px;
+  font-size: 16px;
   background: transparent;
 }
 
@@ -24,7 +32,7 @@
 }
 
 .input-container .input-renderer {
-  font-size: 14px;
+  font-size: 16px;
   position: absolute;
   inset: 0;
   display: flex;
@@ -45,6 +53,8 @@
 
 .mention {
   color: green;
+  background-color: rgba(0, 255, 0, 0.05);
+  border-radius: 2px;
   cursor: pointer;
   z-index: 1;
 }
