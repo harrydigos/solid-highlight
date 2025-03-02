@@ -6,7 +6,6 @@ import {
   createEffect,
   createMemo,
   createSignal,
-  onMount,
 } from "solid-js";
 import "./App.css";
 
@@ -52,26 +51,21 @@ import "./App.css";
 type TextSegment = {
   text: string;
   isMention: boolean;
-  triggerType?: string; // To identify which trigger was used
+  triggerName?: string; // To identify which trigger was used
   color?: string;
   isNewline?: boolean;
 };
 
 type TriggerConfig = {
-  pattern: string | RegExp;
-  type: "simple" | "regex";
   name: string; // Identifier for this trigger type
+  pattern: string | RegExp;
   color?: string;
-};
-
-type ParserOptions = {
-  handleNewlines?: boolean;
 };
 
 function parseAdvancedMentions(
   text: string,
   triggers: TriggerConfig[],
-  options: ParserOptions = { handleNewlines: false },
+  options = { handleNewlines: false },
 ): TextSegment[] {
   if (!text) return [];
 
@@ -101,8 +95,8 @@ function parseAdvancedMentions(
 
     // Try to match each trigger at the current position
     for (const trigger of triggers) {
-      if (trigger.type === "simple") {
-        const simplePattern = trigger.pattern as string;
+      if (typeof trigger.pattern === "string") {
+        const simplePattern = trigger.pattern;
 
         // Check if text at current position starts with this trigger
         if (text.startsWith(simplePattern, currentIndex)) {
@@ -126,8 +120,8 @@ function parseAdvancedMentions(
           mentionFound = true;
           break;
         }
-      } else if (trigger.type === "regex") {
-        const regexPattern = trigger.pattern as RegExp;
+      } else if (trigger.pattern instanceof RegExp) {
+        const regexPattern = trigger.pattern;
         // Create a copy of the regex to ensure lastIndex is set correctly
         const regex = new RegExp(regexPattern.source, regexPattern.flags);
         regex.lastIndex = currentIndex;
@@ -140,6 +134,8 @@ function parseAdvancedMentions(
           mentionFound = true;
           break;
         }
+      } else {
+        throw new Error("Unsupported pattern");
       }
     }
 
@@ -178,7 +174,7 @@ function parseAdvancedMentions(
       result.push({
         text: mentionText,
         isMention: true,
-        triggerType: matchedTrigger.name,
+        triggerName: matchedTrigger.name,
         color: matchedTrigger.color,
       });
 
@@ -233,27 +229,12 @@ function parseAdvancedMentions(
   return result;
 }
 
-// Example usage:
-/*
 const triggers = [
-  { pattern: '@', type: 'simple', name: 'at-mention' },
-  { pattern: '@@', type: 'simple', name: 'double-at-mention' },
-  { pattern: /\{\{[^}]+\}\}/g, type: 'regex', name: 'curly-mention' }
-];
-
-const text = "Hello @user and @@team! We need to update the {{variable}} here.";
-const segments = parseAdvancedMentions(text, triggers);
-const container = document.getElementById('text-container');
-renderAdvancedTextWithMentions(segments).forEach(span => container.appendChild(span));
-*/
-
-const triggers = [
-  { pattern: "@", type: "simple", name: "at-mention", color: "green" },
-  { pattern: "##", type: "simple", name: "hash-team-mention", color: "purple" },
+  { pattern: "@", name: "at-mention", color: "green" },
+  { pattern: "##", name: "hash-team-mention", color: "purple" },
   // Updated regex to capture {{ with any content including spaces inside }}
   {
     pattern: /\{\{[^}]*\}\}/g,
-    type: "regex",
     name: "curly-mention",
     color: "blue",
   },
@@ -331,7 +312,7 @@ export default function App() {
                       cursor: "pointer",
                       "z-index": 1,
                     }}
-                    data-trigger-type={word.triggerType}
+                    data-trigger-type={word.triggerName}
                   >
                     {word.text}
                   </span>
@@ -411,7 +392,7 @@ export default function App() {
                         cursor: "pointer",
                         "z-index": 1,
                       }}
-                      data-trigger-type={word.triggerType}
+                      data-trigger-type={word.triggerName}
                     >
                       {word.text}
                     </span>
