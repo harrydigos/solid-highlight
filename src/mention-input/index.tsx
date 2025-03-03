@@ -15,7 +15,7 @@ export function MentionInput() {
   });
 
   createEffect(() => {
-    console.log(derivedMentionInputValue());
+    console.log("input", derivedMentionInputValue());
   });
 
   return (

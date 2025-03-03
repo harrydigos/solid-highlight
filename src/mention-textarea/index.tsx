@@ -22,7 +22,7 @@ export function MentionTextarea() {
   });
 
   createEffect(() => {
-    console.log(derivedMentionTextAreaValue());
+    console.log("textarea", derivedMentionTextAreaValue());
   });
 
   return (

@@ -32,8 +32,9 @@ body {
 
 /* For showing through placeholder. TODO: doesn't work */
 .input-container input:not([value=""]) {
-  -webkit-text-fill-color: transparent;
-  -webkit-text-fill-color: rgba(255, 0, 0, 0.3);
+  /*-webkit-text-fill-color: transparent;*/
+  /* So we can see if we render the text aligned with the input text  */
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.5);
 }
 
 .input-container .input-renderer {
@@ -96,7 +97,8 @@ body {
 /* For showing through placeholder. TODO: doesn't work */
 .textarea-container textarea:not([value=""]) {
   /*-webkit-text-fill-color: transparent;*/
-  -webkit-text-fill-color: rgba(255, 0, 0, 0.3);
+  /* So we can see if we render the text aligned with the input text  */
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.5);
 }
 
 .textarea-container .textarea-renderer {
