@@ -1,6 +1,7 @@
 import { For, Show, createEffect, createMemo, createSignal } from "solid-js";
 import { triggers } from "../constants";
 import { parseAdvancedMentions } from "../helpers";
+import { List } from "@solid-primitives/list";
 
 export function MentionInput() {
   const [mentionInputValue, setMentionInputValue] = createSignal(
@@ -31,25 +32,25 @@ export function MentionInput() {
         placeholder="This is a placeholder!"
       />
       <div ref={refInput} class="input-renderer">
-        <For each={derivedMentionInputValue()}>
+        <List each={derivedMentionInputValue()}>
           {(word) => (
-            <Show when={word.isMention} fallback={<span>{word.text}</span>}>
+            <Show when={word().isMention} fallback={<span>{word().text}</span>}>
               <span
                 style={{
-                  color: word.color || "green",
+                  color: word().color || "green",
                   "background-color": "white",
                   "border-radius": "2px",
                   // To move the marker in front
                   cursor: "pointer",
                   "z-index": 1,
                 }}
-                data-trigger-type={word.triggerName}
+                data-trigger-type={word().triggerName}
               >
-                {word.text}
+                {word().text}
               </span>
             </Show>
           )}
-        </For>
+        </List>
       </div>
     </div>
   );

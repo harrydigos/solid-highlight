@@ -8,6 +8,7 @@ import {
 } from "solid-js";
 import { parseAdvancedMentions } from "../helpers";
 import { triggers } from "../constants";
+import { List } from "@solid-primitives/list";
 
 export function MentionTextarea() {
   const [mentionTextAreaValue, setMentionTextAreaValue] = createSignal(
@@ -40,16 +41,16 @@ export function MentionTextarea() {
         placeholder="This is a placeholder!"
       />
       <div ref={refTextArea} class="textarea-renderer">
-        <For each={derivedMentionTextAreaValue()}>
+        <List each={derivedMentionTextAreaValue()}>
           {(word) => (
             <Switch>
-              <Match when={word.isNewline}>
+              <Match when={word().isNewline}>
                 <br />
               </Match>
-              <Match when={word.isMention}>
+              <Match when={word().isMention}>
                 <span
                   style={{
-                    color: word.color || "green",
+                    color: word().color || "green",
                     "background-color": "white",
                     "border-radius": "2px",
                     position: "relative",
@@ -57,17 +58,17 @@ export function MentionTextarea() {
                     cursor: "pointer",
                     "z-index": 1,
                   }}
-                  data-trigger-type={word.triggerName}
+                  data-trigger-type={word().triggerName}
                 >
-                  {word.text}
+                  {word().text}
                 </span>
               </Match>
-              <Match when={!word.isMention}>
-                <span>{word.text}</span>
+              <Match when={!word().isMention}>
+                <span>{word().text}</span>
               </Match>
             </Switch>
           )}
-        </For>
+        </List>
       </div>
     </div>
   );
