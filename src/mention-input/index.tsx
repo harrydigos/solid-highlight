@@ -1,4 +1,4 @@
-import { For, Show, createEffect, createMemo, createSignal } from "solid-js";
+import { Show, createEffect, createMemo, createSignal } from "solid-js";
 import { triggers } from "../constants";
 import { parseAdvancedMentions } from "../helpers";
 import { List } from "@solid-primitives/list";
@@ -20,7 +20,7 @@ export function MentionInput() {
   });
 
   return (
-    <div class="input-container">
+    <div class="relative w-[400px] h-8 border border-gray-500 rounded-md">
       <input
         value={mentionInputValue()}
         onInput={(e) => setMentionInputValue(e.target.value || "")}
@@ -30,19 +30,19 @@ export function MentionInput() {
           refInput.scrollLeft = e.target.scrollLeft;
         }}
         placeholder="This is a placeholder!"
+        class="absolute inset-0 w-full border-none outline-none px-2 text-base bg-transparent z-[1] text-white placeholder-gray-400 not-[value='']:input-fill"
       />
-      <div ref={refInput} class="input-renderer">
+      <div
+        ref={refInput}
+        class="absolute inset-0 flex items-center px-2 whitespace-pre overflow-x-auto select-none scrollbar-hidden text-gray-500"
+      >
         <List each={derivedMentionInputValue()}>
           {(word) => (
             <Show when={word().isMention} fallback={<span>{word().text}</span>}>
               <span
+                class="bg-white rounded-xs cursor-pointer z-[1] text-green-500"
                 style={{
-                  color: word().color || "green",
-                  "background-color": "white",
-                  "border-radius": "2px",
-                  // To move the marker in front
-                  cursor: "pointer",
-                  "z-index": 1,
+                  color: word().color,
                 }}
                 data-trigger-type={word().triggerName}
               >
