@@ -1,9 +1,9 @@
-import { Show, createEffect, createMemo, createSignal } from "solid-js";
+import { Show, createMemo, createSignal } from "solid-js";
 import { triggers } from "../constants";
 import { parseAdvancedMentions } from "../helpers";
 import { List } from "@solid-primitives/list";
 
-export function MentionInput() {
+export function OverlapInput() {
   const [mentionInputValue, setMentionInputValue] = createSignal(
     "Hello @user and ##team! We need to update the {{ variable }} here.",
   );
@@ -13,10 +13,6 @@ export function MentionInput() {
     return parseAdvancedMentions(mentionInputValue(), triggers, {
       handleNewlines: false,
     });
-  });
-
-  createEffect(() => {
-    console.log("input", derivedMentionInputValue());
   });
 
   return (

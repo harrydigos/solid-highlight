@@ -1,15 +1,9 @@
-import {
-  Match,
-  Switch,
-  createEffect,
-  createMemo,
-  createSignal,
-} from "solid-js";
+import { Match, Switch, createMemo, createSignal } from "solid-js";
 import { parseAdvancedMentions } from "../helpers";
 import { triggers } from "../constants";
 import { List } from "@solid-primitives/list";
 
-export function MentionTextarea() {
+export function OverlapTextarea() {
   const [mentionTextAreaValue, setMentionTextAreaValue] = createSignal(
     "Hello @user1 and ##team!\nWe need to update the {{ variable }} here.\n\nHey @admin, can you check the {{ status }} of this task?\n##urgent ##reminder\n\n@developer, please review the code for {{ feature_name }}.\nWe should also sync with ##design to finalize the UI.\n\nLet me know if anything needs clarification.\nThanks, @manager!",
   );
@@ -19,10 +13,6 @@ export function MentionTextarea() {
     return parseAdvancedMentions(mentionTextAreaValue(), triggers, {
       handleNewlines: true,
     });
-  });
-
-  createEffect(() => {
-    console.log("textarea", derivedMentionTextAreaValue());
   });
 
   return (
