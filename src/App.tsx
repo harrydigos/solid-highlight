@@ -1,5 +1,6 @@
-import { OverlapInput } from './overlap-inputs/input';
-import { OverlapTextarea } from './overlap-inputs/textarea';
+import { ContentEditableInput } from "./content-editable-input/input";
+import { OverlapInput } from "./overlap-inputs/input";
+import { OverlapTextarea } from "./overlap-inputs/textarea";
 
 export default function App() {
   return (
@@ -14,6 +15,10 @@ export default function App() {
         </div>
         <OverlapInput />
         <OverlapTextarea />
+      </div>
+
+      <div class="flex flex-col gap-6">
+        <ContentEditableInput />
       </div>
     </div>
   );
