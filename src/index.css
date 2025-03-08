@@ -5,10 +5,4 @@
     scrollbar-width: none;
     display: none;
   }
-
-  .input-fill {
-    /*-webkit-text-fill-color: transparent;*/
-    /* So we can see if we render the text aligned with the input text  */
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.5);
-  }
 }

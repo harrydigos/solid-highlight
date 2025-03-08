@@ -30,11 +30,11 @@ export function MentionInput() {
           refInput.scrollLeft = e.target.scrollLeft;
         }}
         placeholder="This is a placeholder!"
-        class="absolute inset-0 w-full border-none outline-none px-2 text-base bg-transparent z-[1] text-white placeholder-gray-400 not-[value='']:input-fill"
+        class="absolute inset-0 w-full border-none outline-none text-white/50 px-2 text-base bg-transparent z-[1] placeholder-gray-400"
       />
       <div
         ref={refInput}
-        class="absolute inset-0 flex items-center px-2 whitespace-pre overflow-x-auto select-none scrollbar-hidden text-gray-500"
+        class="absolute inset-0 flex items-center px-2 whitespace-pre overflow-x-auto select-none scrollbar-hidden"
       >
         <List each={derivedMentionInputValue()}>
           {(word) => (

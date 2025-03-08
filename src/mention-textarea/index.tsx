@@ -11,7 +11,7 @@ import { List } from "@solid-primitives/list";
 
 export function MentionTextarea() {
   const [mentionTextAreaValue, setMentionTextAreaValue] = createSignal(
-    "Hello @user\nand\n##team!\n\nWe need to update the {{ variable }} here.",
+    "Hello @user1 and ##team!\nWe need to update the {{ variable }} here.\n\nHey @admin, can you check the {{ status }} of this task?\n##urgent ##reminder\n\n@developer, please review the code for {{ feature_name }}.\nWe should also sync with ##design to finalize the UI.\n\nLet me know if anything needs clarification.\nThanks, @manager!",
   );
   let refTextArea: HTMLDivElement | undefined;
 
@@ -26,7 +26,7 @@ export function MentionTextarea() {
   });
 
   return (
-    <div class="textarea-container">
+    <div class="relative w-[400px] min-h-[200px] border border-gray-500 rounded-md">
       <textarea
         value={mentionTextAreaValue()}
         onInput={(e) => {
@@ -38,8 +38,12 @@ export function MentionTextarea() {
           refTextArea.scrollLeft = e.target.scrollLeft;
         }}
         placeholder="This is a placeholder!"
+        class="absolute inset-0 text-white/50 w-full h-full border-none outline-none p-2 text-base bg-transparent z-[1] placeholder-gray-400 resize-none whitespace-pre-wrap break-words overflow-x-hidden overflow-y-auto scrollbar-hidden"
       />
-      <div ref={refTextArea} class="textarea-renderer">
+      <div
+        ref={refTextArea}
+        class="absolute inset-0 m-2 whitespace-pre-wrap break-words user-select-none scrollbar-hidden overflow-x-hidden overflow-y-auto"
+      >
         <List each={derivedMentionTextAreaValue()}>
           {(word) => (
             <Switch>
@@ -48,14 +52,13 @@ export function MentionTextarea() {
               </Match>
               <Match when={word().isMention}>
                 <span
+                  // we need to add 'whitespace-nowrap' because of mentions that have space in between.
+                  // so that makes it to not render exactly on top
+                  //
+                  // Another issue occures when we scroll while hovering the mention
+                  class="bg-white relative rounded-xs cursor-pointer z-[1] text-green-500"
                   style={{
-                    color: word().color || "green",
-                    "background-color": "white",
-                    "border-radius": "2px",
-                    position: "relative",
-                    // To move the marker in front
-                    cursor: "pointer",
-                    "z-index": 1,
+                    color: word().color,
                   }}
                   data-trigger-type={word().triggerName}
                 >
