@@ -1,11 +1,11 @@
-import { Match, Switch, createMemo, createSignal } from "solid-js";
-import { parseAdvancedMentions } from "../helpers";
-import { triggers } from "../constants";
-import { List } from "@solid-primitives/list";
+import { Match, Switch, createMemo, createSignal } from 'solid-js';
+import { parseAdvancedMentions } from '../helpers';
+import { triggers } from '../constants';
+import { List } from '@solid-primitives/list';
 
 export function OverlapTextarea() {
   const [mentionTextAreaValue, setMentionTextAreaValue] = createSignal(
-    "Hello @user1 and ##team!\nWe need to update the {{ variable }} here.\n\nHey @admin, can you check the {{ status }} of this task?\n##urgent ##reminder\n\n@developer, please review the code for {{ feature_name }}.\nWe should also sync with ##design to finalize the UI.\n\nLet me know if anything needs clarification.\nThanks, @manager!",
+    'Hello @user1 and ##team!\nWe need to update the {{ variable }} here.\n\nHey @admin, can you check the {{ status }} of this task?\n##urgent ##reminder\n\n@developer, please review the code for {{ feature_name }}.\nWe should also sync with ##design to finalize the UI.\n\nLet me know if anything needs clarification.\nThanks, @manager!',
   );
   let refTextArea: HTMLDivElement | undefined;
 
@@ -16,11 +16,11 @@ export function OverlapTextarea() {
   });
 
   return (
-    <div class="relative w-[400px] min-h-[200px] border border-gray-500 rounded-md">
+    <div class="relative min-h-[200px] w-[400px] rounded-md border border-gray-500">
       <textarea
         value={mentionTextAreaValue()}
         onInput={(e) => {
-          setMentionTextAreaValue(e.target.value || "");
+          setMentionTextAreaValue(e.target.value || '');
         }}
         onScroll={(e) => {
           if (!refTextArea) return;
@@ -28,11 +28,11 @@ export function OverlapTextarea() {
           refTextArea.scrollLeft = e.target.scrollLeft;
         }}
         placeholder="This is a placeholder!"
-        class="absolute inset-0 text-white/50 w-full h-full border-none outline-none p-2 text-base bg-transparent z-[1] placeholder-gray-400 resize-none whitespace-pre-wrap break-words overflow-x-hidden overflow-y-auto scrollbar-hidden"
+        class="scrollbar-hidden absolute inset-0 z-[1] h-full w-full resize-none overflow-x-hidden overflow-y-auto border-none bg-transparent p-2 text-base break-words whitespace-pre-wrap text-white/50 placeholder-gray-400 outline-none"
       />
       <div
         ref={refTextArea}
-        class="absolute inset-0 m-2 whitespace-pre-wrap break-words user-select-none scrollbar-hidden overflow-x-hidden overflow-y-auto"
+        class="user-select-none scrollbar-hidden absolute inset-0 m-2 overflow-x-hidden overflow-y-auto break-words whitespace-pre-wrap"
       >
         <List each={derivedMentionTextAreaValue()}>
           {(word) => (
@@ -46,7 +46,7 @@ export function OverlapTextarea() {
                   // so that makes it to not render exactly on top
                   //
                   // Another issue occures when we scroll while hovering the mention
-                  class="bg-white relative rounded-xs cursor-pointer z-[1] text-green-500"
+                  class="relative z-[1] cursor-pointer rounded-xs bg-white text-green-500"
                   style={{
                     color: word().color,
                   }}

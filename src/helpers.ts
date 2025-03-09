@@ -1,4 +1,4 @@
-import type { TextSegment, TriggerConfig } from "./types";
+import type { TextSegment, TriggerConfig } from './types';
 
 export function parseAdvancedMentions(
   text: string,
@@ -13,12 +13,9 @@ export function parseAdvancedMentions(
   // Process text until we reach the end
   while (currentIndex < text.length) {
     // Check for newlines first if handling them
-    if (
-      options.handleNewlines &&
-      text.substring(currentIndex, currentIndex + 1) === "\n"
-    ) {
+    if (options.handleNewlines && text.substring(currentIndex, currentIndex + 1) === '\n') {
       result.push({
-        text: "\n",
+        text: '\n',
         isMention: false,
         isNewline: true,
       });
@@ -33,19 +30,15 @@ export function parseAdvancedMentions(
 
     // Try to match each trigger at the current position
     for (const trigger of triggers) {
-      if (typeof trigger.pattern === "string") {
+      if (typeof trigger.pattern === 'string') {
         const simplePattern = trigger.pattern;
 
         // Check if text at current position starts with this trigger
         if (text.startsWith(simplePattern, currentIndex)) {
           // Find the end of the mention (space or newline)
           let endIndex = -1;
-          for (
-            let i = currentIndex + simplePattern.length;
-            i < text.length;
-            i++
-          ) {
-            if (text[i] === " " || text[i] === "\n") {
+          for (let i = currentIndex + simplePattern.length; i < text.length; i++) {
+            if (text[i] === ' ' || text[i] === '\n') {
               endIndex = i;
               break;
             }
@@ -73,7 +66,7 @@ export function parseAdvancedMentions(
           break;
         }
       } else {
-        throw new Error("Unsupported pattern");
+        throw new Error('Unsupported pattern');
       }
     }
 
@@ -88,8 +81,8 @@ export function parseAdvancedMentions(
           const segments = textBefore.split(/(\n)/);
 
           segments.forEach((segment) => {
-            if (segment === "\n") {
-              result.push({ text: "\n", isMention: false, isNewline: true });
+            if (segment === '\n') {
+              result.push({ text: '\n', isMention: false, isNewline: true });
             } else if (segment) {
               // Split regular text by word boundaries
               const words = segment.match(/\S+|\s+/g) || [];
@@ -120,10 +113,8 @@ export function parseAdvancedMentions(
       currentIndex = matchEnd;
     } else {
       // No mention at current position, find the next word boundary or newline
-      let nextSpaceIndex = text.indexOf(" ", currentIndex);
-      let nextNewlineIndex = options.handleNewlines
-        ? text.indexOf("\n", currentIndex)
-        : -1;
+      let nextSpaceIndex = text.indexOf(' ', currentIndex);
+      let nextNewlineIndex = options.handleNewlines ? text.indexOf('\n', currentIndex) : -1;
 
       // Determine which comes first: space or newline
       let nextBreakIndex = -1;
@@ -141,7 +132,7 @@ export function parseAdvancedMentions(
         break;
       } else {
         // Check if the break is a newline
-        if (options.handleNewlines && text[nextBreakIndex] === "\n") {
+        if (options.handleNewlines && text[nextBreakIndex] === '\n') {
           // Add text before newline
           if (nextBreakIndex > currentIndex) {
             result.push({
@@ -150,7 +141,7 @@ export function parseAdvancedMentions(
             });
           }
           // Add the newline
-          result.push({ text: "\n", isMention: false, isNewline: true });
+          result.push({ text: '\n', isMention: false, isNewline: true });
           currentIndex = nextBreakIndex + 1;
         } else {
           // Regular space break
