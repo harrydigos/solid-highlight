@@ -1,13 +1,6 @@
-import {
-  createEffect,
-  createMemo,
-  createSignal,
-  For,
-  JSX,
-  Show,
-} from "solid-js";
-import { parseAdvancedMentions } from "../helpers";
-import { triggers } from "../constants";
+import { createEffect, createMemo, createSignal, For, JSX, Show } from 'solid-js';
+import { parseAdvancedMentions } from '../helpers';
+import { triggers } from '../constants';
 
 function Mention(props: { value: string }) {
   return (
@@ -17,16 +10,16 @@ function Mention(props: { value: string }) {
         role="button"
         tabIndex="0"
         onClick={() => {}}
-        class="cursor-pointer bg-white rounded-xs z-[1] text-green-500"
+        class="z-[1] cursor-pointer rounded-xs bg-white text-green-500"
       >
         {props.value}
       </span>
       <span
         style={{
-          height: "0px",
-          color: "transparent",
-          outline: "none",
-          position: "absolute",
+          height: '0px',
+          color: 'transparent',
+          outline: 'none',
+          position: 'absolute',
         }}
       >
         <span>&#xFEFF;</span>
@@ -36,14 +29,14 @@ function Mention(props: { value: string }) {
 }
 
 export function ContentEditableInput() {
-  const placeholder = "Type something...";
+  const placeholder = 'Type something...';
   const autoFocus = false;
   const disabled = false;
   const maxLength = 500;
 
   const [isFocused, setIsFocused] = createSignal(false);
   const [mentionInputValue, setMentionInputValue] = createSignal(
-    "Hello @user and ##team!", // We need to update the {{ variable }} here.",
+    'Hello @user and ##team!', // We need to update the {{ variable }} here.",
   );
 
   let editorRef: HTMLDivElement | undefined;
@@ -75,11 +68,9 @@ export function ContentEditableInput() {
     }
   }, [autoFocus]);
 
-  const handleInput: JSX.InputEventHandlerUnion<HTMLDivElement, InputEvent> = (
-    e,
-  ) => {
+  const handleInput: JSX.InputEventHandlerUnion<HTMLDivElement, InputEvent> = (e) => {
     // if (onChange) {
-    const text = e.target.textContent || "";
+    const text = e.target.textContent || '';
     console.log({ text });
 
     // Handle maxLength similar to input element
@@ -102,7 +93,7 @@ export function ContentEditableInput() {
 
   const handleKeyDown = (e: KeyboardEvent) => {
     // Prevent default Enter behavior to mimic single-line input
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
     }
   };
@@ -111,12 +102,12 @@ export function ContentEditableInput() {
     e.preventDefault();
 
     // Get plain text from clipboard
-    const text = e?.clipboardData?.getData("text/plain");
+    const text = e?.clipboardData?.getData('text/plain');
 
     console.log({ text });
 
     // Insert at cursor position
-    document.execCommand("insertText", false, text);
+    document.execCommand('insertText', false, text);
   };
 
   const derivedMentionInputValue = createMemo(() => {
@@ -130,7 +121,7 @@ export function ContentEditableInput() {
   });
 
   return (
-    <div class="w-[400px] h-8 border border-gray-500 rounded-md min-h-[40px] px-3 py-2 text-base text-gray-700 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+    <div class="h-8 min-h-[40px] w-[400px] rounded-md border border-gray-500 bg-white px-3 py-2 text-base text-gray-700 shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none">
       <div>
         {/* <Show when={!isFocused() && (!editorRef || !editorRef?.textContent)}> */}
         {/*   <div aria-hidden="true">{placeholder}</div> */}
@@ -148,10 +139,10 @@ export function ContentEditableInput() {
           // aria-label={"ariaLabel" || placeholder}
           contentEditable={!disabled}
           style={{
-            position: "relative",
-            outline: "none",
-            "white-space": "pre-wrap",
-            "overflow-wrap": "break-word",
+            position: 'relative',
+            outline: 'none',
+            'white-space': 'pre-wrap',
+            'overflow-wrap': 'break-word',
           }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}

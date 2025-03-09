@@ -1,6 +1,6 @@
-import { ContentEditableInput } from "./content-editable-input/input";
-import { OverlapInput } from "./overlap-inputs/input";
-import { OverlapTextarea } from "./overlap-inputs/textarea";
+import { ContentEditableInput } from './content-editable-input/input';
+import { OverlapInput } from './overlap-inputs/input';
+import { OverlapTextarea } from './overlap-inputs/textarea';
 
 export default function App() {
   return (
