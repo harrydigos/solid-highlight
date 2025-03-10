@@ -1,9 +1,10 @@
+import { ContentEditableInput } from './content-editable-input/input';
 import { OverlapInput } from './overlap-inputs/input';
 import { OverlapTextarea } from './overlap-inputs/textarea';
 
 export default function App() {
   return (
-    <div class="flex h-screen flex-col items-center justify-start py-20">
+    <div class="flex h-screen flex-col items-center justify-start gap-24 py-20">
       <div class="flex max-w-[400px] flex-col gap-6">
         <div>
           <h2>Text overlay</h2>
@@ -14,6 +15,10 @@ export default function App() {
         </div>
         <OverlapInput />
         <OverlapTextarea />
+      </div>
+
+      <div class="flex flex-col gap-6">
+        <ContentEditableInput />
       </div>
     </div>
   );
