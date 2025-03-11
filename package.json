@@ -10,6 +10,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,md}\" \"!**/.*/**\""
   },
   "dependencies": {
+    "@bigmistqke/solid-contenteditable": "^0.0.3",
     "@solid-primitives/list": "^0.1.0",
     "solid-js": "^1.9.3"
   },
