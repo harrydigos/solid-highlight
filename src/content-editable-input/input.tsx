@@ -3,7 +3,7 @@ import { ContentEditable } from '@bigmistqke/solid-contenteditable';
 
 export function ContentEditableInput() {
   // const placeholder = 'Type something...';
-  const autoFocus = true;
+  const autoFocus = false;
   const triggers = ['@', '#'];
   // const disabled = false;
   // const maxLength = 500;

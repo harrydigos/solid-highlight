@@ -9,8 +9,7 @@ export default function App() {
         <div>
           <h2>Text overlay</h2>
           <p class="text-xs text-gray-300">
-            This example places words over an input or textarea, with the original text faded to
-            show alignment.
+            This example places words over an input or textarea and hides the original text.
           </p>
         </div>
         <OverlapInput />

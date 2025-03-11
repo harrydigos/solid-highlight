@@ -28,7 +28,7 @@ export function OverlapTextarea() {
           refTextArea.scrollLeft = e.target.scrollLeft;
         }}
         placeholder="This is a placeholder!"
-        class="scrollbar-hidden absolute inset-0 z-[1] h-full w-full resize-none overflow-x-hidden overflow-y-auto border-none bg-transparent p-2 text-base break-words whitespace-pre-wrap text-white/50 placeholder-gray-400 outline-none"
+        class="scrollbar-hidden absolute inset-0 z-[1] h-full w-full resize-none overflow-x-hidden overflow-y-auto border-none bg-transparent p-2 text-base break-words whitespace-pre-wrap text-transparent placeholder-gray-400 outline-none"
       />
       <div
         ref={refTextArea}
@@ -44,9 +44,7 @@ export function OverlapTextarea() {
                 <span
                   // we need to add 'whitespace-nowrap' because of mentions that have space in between.
                   // so that makes it to not render exactly on top
-                  //
-                  // Another issue occures when we scroll while hovering the mention
-                  class="relative z-[1] cursor-pointer rounded-xs bg-white text-green-500"
+                  class="relative rounded-xs bg-white text-green-500"
                   style={{
                     color: word().color,
                   }}

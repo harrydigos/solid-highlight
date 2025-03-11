@@ -26,7 +26,7 @@ export function OverlapInput() {
           refInput.scrollLeft = e.target.scrollLeft;
         }}
         placeholder="This is a placeholder!"
-        class="absolute inset-0 z-[1] w-full border-none bg-transparent px-2 text-base text-white/50 placeholder-gray-400 outline-none"
+        class="absolute inset-0 z-[1] w-full border-none bg-transparent px-2 text-base text-transparent placeholder-gray-400 outline-none"
       />
       <div
         ref={refInput}
@@ -36,7 +36,7 @@ export function OverlapInput() {
           {(word) => (
             <Show when={word().isMention} fallback={<span>{word().text}</span>}>
               <span
-                class="z-[1] cursor-pointer rounded-xs bg-white text-green-500"
+                class="rounded-xs bg-white text-green-500"
                 style={{
                   color: word().color,
                 }}
