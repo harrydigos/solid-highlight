@@ -17,7 +17,14 @@ export default function App() {
         <OverlapTextarea />
       </div>
 
-      <div class="flex flex-col gap-6">
+      <div class="flex max-w-[400px] flex-col gap-6">
+        <div>
+          <h2>Content editable</h2>
+          <p class="text-xs text-gray-300">
+            This example replaces the textarea and input and uses a{' '}
+            <span class="rounded-xs bg-gray-800 p-0.5">contenteditable</span> div.
+          </p>
+        </div>
         <ContentEditableInput />
       </div>
     </div>

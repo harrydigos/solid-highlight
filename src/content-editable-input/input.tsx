@@ -68,7 +68,7 @@ export function ContentEditableInput() {
                     return (
                       <>
                         <Show when={triggers.some((t) => word.startsWith(t))} fallback={word}>
-                          <span role="button" class="bg-sky-700">
+                          <span role="button" class="cursor-pointer rounded-xs bg-sky-700">
                             {word}
                           </span>
                         </Show>
